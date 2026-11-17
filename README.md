@@ -21,7 +21,7 @@ This project is a Streamlit-based web application for employee attendance manage
    pip install -r requirements.txt
    ```
 3. **Place your trained model files** (`mtcnn.pth` and `resnet.pth`) in the project directory.
-4. **Set admin credentials** in `admin_credentials.json` (see below).
+4. **Set admin credentials** (see below).
 5. **Run the app:**
    ```bash
    streamlit run app.py
@@ -30,23 +30,24 @@ This project is a Streamlit-based web application for employee attendance manage
 ## File Structure
 - `app.py` — Main Streamlit application.
 - `requirements.txt` — Python dependencies.
-- `employees.csv` — Stores employee names and face embeddings.
-- `attendance.csv` — Stores attendance records.
-- `mtcnn.pth`, `resnet.pth` — Trained face recognition models.
-- `admin_credentials.json` — Securely stores admin username and password.
+- `mtcnn.pth`, `resnet.pth` — Trained face recognition models (`resnet.pth` is not included; train it with `facial model.ipynb`).
+- `admin_credentials.example.json` — Template for local admin credentials.
+- `employees.csv`, `attendance.csv` — Created automatically at runtime. They hold face embeddings and location logs, so they are git-ignored and never committed.
 
 ## Admin Credentials
-Admin credentials are stored in `admin_credentials.json`:
-```json
-{
-  "username": "admin",
-  "password": "password"
-}
-```
-Change these values to your preferred credentials.
+The app reads credentials in this order:
+
+1. Streamlit secrets — `.streamlit/secrets.toml` (or the Streamlit Cloud secrets panel):
+   ```toml
+   ADMIN_USERNAME = "your-admin"
+   ADMIN_PASSWORD = "a-strong-password"
+   ```
+2. Environment variables `ADMIN_USERNAME` and `ADMIN_PASSWORD`.
+3. A local `admin_credentials.json` (copy `admin_credentials.example.json`). It is git-ignored.
 
 ## Security Notes
-- Credentials are not hardcoded in the source code.
+- Credentials are not hardcoded or committed; they come from secrets or environment variables.
+- Employee face embeddings and attendance logs stay local and are excluded from version control.
 - Only recognized employees can submit attendance.
 - Attendance is location-restricted for added security.
 

@@ -1,5 +1,5 @@
 # Streamlit Attendance App with Face Recognition and Location Check
-# Admin login: admin / password
+# Admin credentials come from Streamlit secrets or environment variables (see README).
 
 import streamlit as st
 import pandas as pd
@@ -28,12 +28,23 @@ MAX_DISTANCE_METERS = 200
 EMPLOYEE_CSV = 'employees.csv'
 ATTENDANCE_CSV = 'attendance.csv'
 
-# Load admin credentials from file
+# Load admin credentials from Streamlit secrets, environment variables,
+# or a local (git-ignored) admin_credentials.json, in that order.
 CREDENTIALS_PATH = 'admin_credentials.json'
 def load_admin_credentials():
-    with open(CREDENTIALS_PATH, 'r') as f:
-        creds = json.load(f)
-    return creds.get('username', ''), creds.get('password', '')
+    try:
+        if 'ADMIN_USERNAME' in st.secrets and 'ADMIN_PASSWORD' in st.secrets:
+            return st.secrets['ADMIN_USERNAME'], st.secrets['ADMIN_PASSWORD']
+    except Exception:
+        pass  # no secrets.toml configured
+    user, pwd = os.getenv('ADMIN_USERNAME'), os.getenv('ADMIN_PASSWORD')
+    if user and pwd:
+        return user, pwd
+    if os.path.exists(CREDENTIALS_PATH):
+        with open(CREDENTIALS_PATH, 'r') as f:
+            creds = json.load(f)
+        return creds.get('username', ''), creds.get('password', '')
+    return None, None
 
 # Helper functions
 def load_employees():
@@ -124,7 +135,9 @@ def main():
             password = st.text_input('Password', type='password')
             if st.button('Login'):
                 ADMIN_USER, ADMIN_PASS = load_admin_credentials()
-                if username == ADMIN_USER and password == ADMIN_PASS:
+                if not ADMIN_USER or not ADMIN_PASS:
+                    st.error('Admin credentials are not configured. Set ADMIN_USERNAME and ADMIN_PASSWORD.')
+                elif username == ADMIN_USER and password == ADMIN_PASS:
                     st.session_state.admin_logged_in = True
                     st.session_state.do_rerun = True
                 else:

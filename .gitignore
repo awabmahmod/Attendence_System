@@ -1,0 +1,13 @@
+# Secrets
+admin_credentials.json
+.streamlit/secrets.toml
+.env
+
+# Runtime data (face embeddings and location logs)
+employees.csv
+attendance.csv
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
